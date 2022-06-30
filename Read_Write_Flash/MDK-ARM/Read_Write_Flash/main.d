@@ -22,9 +22,14 @@ read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.
 read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
 read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
-read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h
-read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
 read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 read_write_flash\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+read_write_flash\main.o: ../Core/Inc/flash.h
+read_write_flash\main.o: ../Core/Inc/cJSON.h
+read_write_flash\main.o: ../Core/Inc/DHT.h
+read_write_flash\main.o: E:\keilc\KeilC_529_Full_Crack\ARM\ARMCC\Bin\..\include\stdio.h
+read_write_flash\main.o: E:\keilc\KeilC_529_Full_Crack\ARM\ARMCC\Bin\..\include\stdbool.h
+read_write_flash\main.o: E:\keilc\KeilC_529_Full_Crack\ARM\ARMCC\Bin\..\include\string.h
+read_write_flash\main.o: E:\keilc\KeilC_529_Full_Crack\ARM\ARMCC\Bin\..\include\stdlib.h
