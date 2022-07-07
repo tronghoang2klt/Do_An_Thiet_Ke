@@ -34,8 +34,9 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define LENG 5
-#define address 0x800FC02
+#define LENG	50
+#define MAX		500
+#define TIME	3 // 6*5=30min
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -59,31 +60,26 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void Task_UART(void);
 void Task_Luu_Flash(void);
+void Task_Gui_Tu_Flash(void);
+void Task_Gui_Cho_Esp(void);
 void Task_DHT11(void);
-void Received(void);
-void ClearBufferEnd(void);
-void XuLyJSON(char *DataJSON);
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
-void SendData(unsigned int trangthaiden,unsigned int thongso1);
+void Task_Tao_Data(float temperature, float humidity);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 float temperature=1,humidity=1;
 DHT_DataTypedef DHT11_Data;
-char data_rx[LENG];
-uint8_t flag_rx = 0; //tranh tinh trang o trong ngat qua lau
-uint8_t flag_button = 0;
-char data_tx[LENG];
-int thongso1=0,trangthaiden=0;
-char str_den[100],str_trangthaiden[100],JSON[100];
-char rx_buffer[200];// luu cac ki tu doc duoc vao mang
-uint8_t rx_data;//luu tung ki tu doc dc
-unsigned int rx_index=0;
-cJSON *Str_json,*Str_trangthaiden_json,*Str_den_json;
+char data_luu_json[MAX],JSON_Flash[MAX];
+char str_temperature[LENG],str_humidity[LENG],JSON[LENG];
+char Flash_To_ESP[LENG];
 long long last_tick=0;
+int flag_gui=1,flag_luu=0;
+int count=0;
+int so_lan_da_luu=0;
+int flag_rx=0;
+char luu_usrt[5];
 /* USER CODE END 0 */
 
 /**
@@ -116,11 +112,12 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-	HAL_UART_Receive_IT(&huart2,(uint8_t *)&data_rx,LENG);
-	//Flash_Write_Uint(100,_PAGE_127_);
-	uint32_t mil=HAL_GetTick();
-	uint16_t i=0;
+	HAL_UART_Receive_IT(&huart2,(uint8_t *)&luu_usrt,5);
 	last_tick=HAL_GetTick();// lay uwTich cua stm32
+	for(int i=0;i<MAX;i++)
+				{
+					data_luu_json[i]=0;
+				}
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -130,54 +127,56 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		  if (HAL_GetTick()-last_tick>=1000) {
-		  SendData(trangthaiden, thongso1);
-		last_tick=HAL_GetTick();
-		}
-		if( HAL_GetTick() - mil > 500)
+		//Task_DHT11();
+		//----------nhap nhay led de bao van con hoat dong-------------//
+		if (HAL_GetTick()-last_tick>=1000) 
 		{
+			
 			HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-			mil=HAL_GetTick();
+			Task_DHT11();
+			last_tick=HAL_GetTick();
 		}
-		Task_DHT11();
-		if (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_4) == 1)// nhan dc thong tin gui tu esp
+		
+		//----------doc tin hieu yeu cau gui tu esp-------------------//
+		if (flag_rx == 1)
 		{
-			Task_UART();
+			//--------tu trang thai flash sang trang thai gui len esp----------------//
+			if(flag_luu == 1 && flag_gui == 0)
+			{
+				Task_Gui_Tu_Flash();
+				//HAL_UART_Transmit(&huart2,(uint8_t *)&JSON_Flash,MAX,1000);
+			}
+			//-------neu bat dau tu trang thai hoat dong esp----------//
+			else
+			{
+				//---- xoa du lieu dat_json------///
+				/*for(int i=0;i<MAX;i++)
+				{
+					data_luu_json[i]=0;
+				}*/
+				Task_Gui_Cho_Esp();
+			}
+			flag_luu=0;
+			flag_gui=1;
+			HAL_UART_Receive_IT(&huart2,(uint8_t *)&luu_usrt,5);
 		}
-		else // neu khong nhan dc thong tin gui
+		//-------------neu khong co tin hieu yeu cau tu esp----------//
+		//-------------luu vao flash---------------------------------//
+		else 
 		{
 			Task_Luu_Flash();
+			flag_gui=0;
+			flag_luu=1;
+			flag_rx=0;
+			HAL_UART_Receive_IT(&huart2,(uint8_t *)&luu_usrt,5);
 		}
-		//ghi du lieu vao flash
-		if(flag_rx == 1)
-		{
-			//Flash_Write_Uint(i,_PAGE_127_);
-			Flash_Write_String((uint8_t *)&data_rx,_PAGE_127_,LENG);//luu vao page 127 de tranh tinh trang ghi de len flash
-			HAL_UART_Receive_IT(&huart2,(uint8_t *)&data_rx,LENG);
-			flag_rx = 0;
-		}
-		
-		
-		/*if (flag_button == 1)
-		{
-			Flash_Read_String(data_tx,_PAGE_127_,LENG);// doc ra
-			HAL_UART_Transmit(&huart2,data_tx,LENG,10);
-			flag_button =0;
-		}
-		Flash_Read_String(data_tx,address,LENG);// doc ra
-		*/
-		//HAL_UART_Receive_IT(&huart2,data_rx,LENG);
-		i++;
-		//Flash_Write_Uint(100,_PAGE_127_);
-		//uint32_t a= Flash_Read_Uint(_PAGE_127_);
-		//sprintf(data_rx,"a:%d",a);
-		//Flash_Write_String((uint8_t *)&data_rx,address,LENG);
-		Flash_Read_String((uint8_t *)&data_tx,_PAGE_127_,LENG);
-		HAL_UART_Transmit(&huart2,(uint8_t *)&data_tx,LENG,1000);
-		HAL_Delay(1000);
-  }
+		//last_tick=HAL_GetTick();
+	
+		HAL_Delay(1000);//delay 5s(test)
+  
   /* USER CODE END 3 */
 }
+	}
 
 /**
   * @brief System Clock Configuration
@@ -299,105 +298,81 @@ void Task_DHT11(void)
 		temperature=DHT11_Data.Temperature;
 		humidity=DHT11_Data.Humidity;
 }
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void Task_Tao_Data(float temperature,float humidity)
 {
-	if (huart->Instance==USART2) {
-		last_tick=HAL_GetTick();
-		// cho bien nay vao tranh truong hop dang su ly data thi gui ve
-		// tuc la tranh tinh trang dang doc du lieu thi gui ve
-		// chuong trinh doc du lieu => mang data
-		Received();
-		HAL_UART_Receive_IT(&huart2, &rx_data, 1);
-	}
-}
-void Received(void)
-{
-	if (rx_data!='\n') {
-		rx_buffer[rx_index++]=rx_data;
-	}
-	else
-	{
-		//printf(" du lieu nhan dc : %s\n",rx_buffer);
-		XuLyJSON(rx_buffer);
-		ClearBufferEnd();
-		//printf(" du lieu nhan dc : %d\n",rx_index);
-	}
-
-}
-void ClearBufferEnd(void)
-{
-	rx_index=0;
-	for(int i=0 ; i<200 ; i++)
-	{
-		rx_buffer[i]=0;
-	}
-	last_tick=HAL_GetTick();
-}
-void XuLyJSON(char *DataJSON)
-{
-	Str_json=cJSON_Parse(DataJSON);
-	//kiem tra xem cai du lieu dua vao co la cau truc json hay ko
-	// {"name":"giatri"}
-	if(!Str_json)
-	{
-		printf("json error!\r\n");
-		return;
-	}
-	else
-	{
-		printf("Json ok!\r\n");
-		// {"name":"giatri"}
-		if (cJSON_GetObjectItem(Str_json, "thongso1")) // neu name la thongso1
-		{
-			// lay du lieu khi nhap vao tu thong so 1
-			thongso1=atoi(cJSON_GetObjectItem(Str_json, "thongso1")->valuestring);
-			printf("thong so 1 thay doi la : %d\r\n",thongso1);
-		}
-		else if(cJSON_GetObjectItem(Str_json,"trangthaiden"))// neu name la trang thai den
-		{
-			// so sanh gia tri cua trang thai den voi 1
-			if(strstr(cJSON_GetObjectItem(Str_json, "trangthaiden")->valuestring,"0")!= NULL)
-			{
-				printf("off led 1\r\n");
-				trangthaiden=0;
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13,SET);
-			}
-				// so sanh gia tri cua trang thai den voi 1
-			else if(strstr(cJSON_GetObjectItem(Str_json, "trangthaiden")->valuestring,"1")!= NULL)
-				{
-					printf("on led 1\r\n");
-					trangthaiden=1;
-					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13,RESET);
-				}
-		}
-	}
-}
-void SendData(unsigned int trangthaiden,unsigned int thongso1)
-{
-	//cau truc co ban cu json la: "ten1":"gia tri1","ten2":"gia tri2",...
+	//cau truc co ban cu json la:     {"temp":"giatri","humi":"giatri"}\n
 	// data cuoi cung la 1 mang char
 
 	//B1: xoa mang du lieu
-	for (int i = 0;  i <100; i++) {
-		str_den[i]=0;
-		str_trangthaiden[i]=0;
+	for (int i = 0;  i <LENG; i++) {
+		str_temperature[i]=0;
+		str_humidity[i]=0;
 		JSON[i]=0;
 	}
 
 	//B2: chuyen du lieu ve char
-	sprintf(str_den,"%d",thongso1);
-	sprintf(str_trangthaiden,"%d",trangthaiden);
+	sprintf(str_temperature,"%.2f",temperature);
+	sprintf(str_humidity,"%.2f",humidity);
 
 	//B3: copy vao json
-	strcat(JSON,"{\"trangthaiden\":\"");
-	strcat(JSON,str_trangthaiden);
+	strcat(JSON,"{\"temp\":\"");
+	strcat(JSON,str_temperature);
 	strcat(JSON,"\",");
 
-	strcat(JSON,"\"thongsoden\":\"");
-	strcat(JSON,str_den);
-	strcat(JSON,"\"}");
+	strcat(JSON,"\"humi\":\"");
+	strcat(JSON,str_humidity);
+	strcat(JSON,"\"}\n");
 
-	printf("%s\n",JSON);
+}
+void Task_Luu_Flash(void)
+{
+	//---------sau 6 lan ghi vao data_luu_json moi ghi vao flash lai 1 lan---------//
+	while(so_lan_da_luu < TIME)
+	{
+	
+	Task_Tao_Data(temperature,humidity);
+	so_lan_da_luu++;
+	count++;
+	
+	//ghi du lieu vao data_luu_JSON
+	strcat(data_luu_json,JSON);
+	}
+	Flash_Write_String((uint8_t *)&data_luu_json,_PAGE_118_,MAX);
+		so_lan_da_luu=0;
+		for (int i = 0;  i <MAX; i++) 
+				{
+					data_luu_json[i]=0;
+				}
+}
+void Task_Gui_Tu_Flash(void)
+{
+				for (int i = 0;  i <MAX; i++) 
+				{
+					JSON_Flash[i]=0;
+				}
+				//doc theo byte
+				Flash_Read_String((uint8_t *)&JSON_Flash,_PAGE_118_,MAX);// luu vao json_flash
+				int t=0;
+				int vitri=0;
+				for(int i=0;i<TIME;i++)
+				{
+					for(int j=0;j<32;j++)
+					{
+						Flash_To_ESP[j]=JSON_Flash[t];
+						t++;
+					}
+					HAL_UART_Transmit(&huart2,(uint8_t *)&Flash_To_ESP,32,1000);
+				}
+				count=0;
+}
+void Task_Gui_Cho_Esp(void)
+{
+	Task_Tao_Data(temperature,humidity);
+	HAL_UART_Transmit(&huart2,(uint8_t *)&JSON,sizeof(JSON),1000);
+}
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	flag_rx++;
 }
 /* USER CODE END 4 */
 

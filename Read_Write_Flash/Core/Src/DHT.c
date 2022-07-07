@@ -8,7 +8,7 @@
 
 
 #define DHT_PORT GPIOA
-#define DHT_PIN GPIO_PIN_0
+#define DHT_PIN GPIO_PIN_1
 
 
 uint8_t Rh_byte1, Rh_byte2, Temp_byte1, Temp_byte2;

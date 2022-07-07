@@ -28,7 +28,7 @@ I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h)(0x615F1252)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h)(0x615F1252)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h)(0x615F1252)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h)(0x615F1252)
-F (../Core/Src/main.c)(0x62BD78CE)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Read_Write_Flash-IE:\keilc\KeilC_529_Full_Crack\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IE:\keilc\KeilC_529_Full_Crack\Keil\STM32F1xx_DFP\2.3.0\Device\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD -DUSE_HAL_DRIVER -DSTM32F103xB-o read_write_flash\main.o --omf_browse read_write_flash\main.crf --depend read_write_flash\main.d)
+F (../Core/Src/main.c)(0x62C66ED1)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Read_Write_Flash-IE:\keilc\KeilC_529_Full_Crack\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IE:\keilc\KeilC_529_Full_Crack\Keil\STM32F1xx_DFP\2.3.0\Device\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD -DUSE_HAL_DRIVER -DSTM32F103xB-o read_write_flash\main.o --omf_browse read_write_flash\main.crf --depend read_write_flash\main.d)
 I (../Core/Inc/main.h)(0x62BD76D1)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x615F1252)
 I (../Core/Inc/stm32f1xx_hal_conf.h)(0x62BD76D0)
@@ -127,7 +127,7 @@ I (E:\keilc\KeilC_529_Full_Crack\ARM\ARMCC\include\ctype.h)(0x5D9AE02A)
 I (E:\keilc\KeilC_529_Full_Crack\ARM\ARMCC\include\float.h)(0x5D9AE028)
 I (../Core/Inc/cJSON.h)(0x6242AF23)
 I (E:\keilc\KeilC_529_Full_Crack\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
-F (..\Core\Src\DHT.c)(0x6213936D)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Read_Write_Flash-IE:\keilc\KeilC_529_Full_Crack\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IE:\keilc\KeilC_529_Full_Crack\Keil\STM32F1xx_DFP\2.3.0\Device\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD -DUSE_HAL_DRIVER -DSTM32F103xB-o read_write_flash\dht.o --omf_browse read_write_flash\dht.crf --depend read_write_flash\dht.d)
+F (..\Core\Src\DHT.c)(0x62BF0A5E)(--c99 -c --cpu Cortex-M3 -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Read_Write_Flash-IE:\keilc\KeilC_529_Full_Crack\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IE:\keilc\KeilC_529_Full_Crack\Keil\STM32F1xx_DFP\2.3.0\Device\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD -DUSE_HAL_DRIVER -DSTM32F103xB-o read_write_flash\dht.o --omf_browse read_write_flash\dht.crf --depend read_write_flash\dht.d)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x615F1252)
 I (../Core/Inc/stm32f1xx_hal_conf.h)(0x62BD76D0)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h)(0x615F1252)
