@@ -49,6 +49,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+RTC_HandleTypeDef hrtc;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -59,6 +61,7 @@ UART_HandleTypeDef huart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 void Task_Luu_Flash(void);
 void Task_Gui_Tu_Flash(void);
@@ -80,6 +83,8 @@ int count=0;
 int so_lan_da_luu=0;
 int flag_rx=0;
 char luu_usrt[5];
+char str_time[30];
+RTC_TimeTypeDef sTime;
 /* USER CODE END 0 */
 
 /**
@@ -111,6 +116,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 	HAL_UART_Receive_IT(&huart2,(uint8_t *)&luu_usrt,5);
 	last_tick=HAL_GetTick();// lay uwTich cua stm32
@@ -131,7 +137,7 @@ int main(void)
 		//----------nhap nhay led de bao van con hoat dong-------------//
 		if (HAL_GetTick()-last_tick>=1000) 
 		{
-			
+			HAL_RTC_GetTime(&hrtc,&sTime,RTC_FORMAT_BIN);
 			HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
 			Task_DHT11();
 			last_tick=HAL_GetTick();
@@ -173,10 +179,9 @@ int main(void)
 		//last_tick=HAL_GetTick();
 	
 		HAL_Delay(1000);//delay 5s(test)
-  
+  }
   /* USER CODE END 3 */
 }
-	}
 
 /**
   * @brief System Clock Configuration
@@ -186,14 +191,16 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
@@ -214,6 +221,73 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime ;
+  RTC_DateTypeDef DateToUpdate ;
+  RTC_AlarmTypeDef sAlarm ;
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+  hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date
+  */
+	if(HAL_RTCEx_BKUPRead(&hrtc,RTC_BKP_DR1)!=0x32F2)
+	{
+  sTime.Hours = 14;
+  sTime.Minutes = 25;
+  sTime.Seconds = 0;
+
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  DateToUpdate.WeekDay = RTC_WEEKDAY_THURSDAY;
+  DateToUpdate.Month = RTC_MONTH_JULY;
+  DateToUpdate.Date = 7;
+  DateToUpdate.Year = 22;
+
+  if (HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+HAL_RTCEx_BKUPWrite(&hrtc,RTC_BKP_DR1,0x32F2);//
+	}
+  /* USER CODE END RTC_Init 2 */
+
 }
 
 /**
@@ -298,6 +372,10 @@ void Task_DHT11(void)
 		temperature=DHT11_Data.Temperature;
 		humidity=DHT11_Data.Humidity;
 }
+void Task_Time(void)
+{
+	HAL_RTC_GetTime(&hrtc,&sTime,RTC_FORMAT_BIN);
+}
 void Task_Tao_Data(float temperature,float humidity)
 {
 	//cau truc co ban cu json la:     {"temp":"giatri","humi":"giatri"}\n
@@ -305,17 +383,23 @@ void Task_Tao_Data(float temperature,float humidity)
 
 	//B1: xoa mang du lieu
 	for (int i = 0;  i <LENG; i++) {
+		str_time[i]=0;
 		str_temperature[i]=0;
 		str_humidity[i]=0;
 		JSON[i]=0;
 	}
-
+	//HAL_RTC_GetTime(&hrtc,&sTime,RTC_FORMAT_BIN);
 	//B2: chuyen du lieu ve char
+	sprintf(str_time,"%02d:%02d:%02d",sTime.Hours,sTime.Minutes,sTime.Seconds);
 	sprintf(str_temperature,"%.2f",temperature);
 	sprintf(str_humidity,"%.2f",humidity);
 
 	//B3: copy vao json
-	strcat(JSON,"{\"temp\":\"");
+	strcat(JSON,"{\"");
+	strcat(JSON,str_time);
+	strcat(JSON,"\",");
+	
+	strcat(JSON,"\"temp\":\"");
 	strcat(JSON,str_temperature);
 	strcat(JSON,"\",");
 
@@ -352,18 +436,19 @@ void Task_Gui_Tu_Flash(void)
 				}
 				//doc theo byte
 				Flash_Read_String((uint8_t *)&JSON_Flash,_PAGE_118_,MAX);// luu vao json_flash
-				int t=0;
+				HAL_UART_Transmit(&huart2,(uint8_t *)&JSON_Flash,sizeof(JSON_Flash),1000);
+				/*int t=0;
 				int vitri=0;
 				for(int i=0;i<TIME;i++)
 				{
-					for(int j=0;j<32;j++)
+					for(int j=0;j<40;j++)
 					{
 						Flash_To_ESP[j]=JSON_Flash[t];
 						t++;
 					}
-					HAL_UART_Transmit(&huart2,(uint8_t *)&Flash_To_ESP,32,1000);
+					HAL_UART_Transmit(&huart2,(uint8_t *)&Flash_To_ESP,40,1000);
 				}
-				count=0;
+				count=0;*/
 }
 void Task_Gui_Cho_Esp(void)
 {
